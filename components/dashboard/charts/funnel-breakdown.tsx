@@ -3,6 +3,7 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { NameValue } from "@/lib/analyze-types";
 import { channelColor } from "@/components/dashboard/channel-style";
+import { CountUp } from "@/components/dashboard/count-up";
 
 interface FunnelBreakdownProps {
   funnel: { direct: NameValue[]; assisted: NameValue[] };
@@ -52,8 +53,8 @@ function Donut({ title, subtitle, data }: { title: string; subtitle: string; dat
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-xl font-bold text-foreground tabular-nums">
-            {total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          <span className="text-xl font-bold text-foreground">
+            <CountUp value={total} />
           </span>
           <span className="text-[10px] text-muted-foreground uppercase tracking-wider">conversions</span>
         </div>

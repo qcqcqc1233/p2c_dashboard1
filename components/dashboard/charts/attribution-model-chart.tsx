@@ -34,6 +34,7 @@ export function AttributionModelChart({
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
             <XAxis
               dataKey="label"
+              tickFormatter={(v: string) => (v.length > 11 ? v.slice(0, 10) + "…" : v)}
               tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
               axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
               tickLine={false}

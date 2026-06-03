@@ -28,7 +28,7 @@ export function JourneyPaths({
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-foreground">Top Conversion Paths</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Most common journeys to conversion — channel sequence, conversion-closest last
+          Most common journeys to conversion, by channel sequence (conversion-closest last)
         </p>
       </div>
       <div className="space-y-3">
@@ -64,7 +64,7 @@ export function JourneyPaths({
               ))}
             </div>
 
-            <div className="flex items-center gap-6 xl:gap-8 shrink-0">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 xl:gap-8 xl:shrink-0">
               <Metric icon={TrendingUp} value={p.conversions.toLocaleString(undefined, { maximumFractionDigits: 0 })} label={`${p.percentageOfTotal}% of total`} />
               {hasTiming && <Metric icon={Clock} value={`${p.avgDaysToConvert}d`} label="Avg. time" />}
               {hasRevenue && <Metric icon={DollarSign} value={`$${p.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} label="Revenue" accent />}

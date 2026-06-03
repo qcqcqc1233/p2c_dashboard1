@@ -36,7 +36,7 @@ function buildInsight(d: AnalyzeResponse): string {
 
   if (best && best.first > 0) {
     const factorTxt = best.last > 0 ? `${(best.first / best.last).toFixed(1)}×` : `${best.first.toLocaleString()}`;
-    return `${best.channel} introduces ${best.first.toLocaleString()} conversions but earns only ${best.last.toLocaleString()} under last-click — a ${factorTxt} gap. With ${mtPct}% of conversions multi-touch, last-click alone is under-valuing your upper funnel.`;
+    return `${best.channel} introduces ${best.first.toLocaleString()} conversions but earns only ${best.last.toLocaleString()} under last-click: a ${factorTxt} gap. With ${mtPct}% of conversions multi-touch, last-click alone is under-valuing your upper funnel.`;
   }
   return `${mtPct}% of conversions are multi-touch, averaging ${d.kpis.avgInteractions} touchpoints${
     d.meta.hasTiming ? ` over ${d.kpis.avgDaysToConvert} days` : ""

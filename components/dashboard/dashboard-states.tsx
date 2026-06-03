@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { AlertTriangle, Route } from "lucide-react";
 
 export function ErrorBanner({ message }: { message: string }) {
@@ -38,17 +41,44 @@ export function NeedsData({
   );
 }
 
+// What the engine is actually doing, in order — not generic filler.
+const LOADING_MESSAGES = [
+  "Reading the CM360 export…",
+  "Reconstructing conversion paths…",
+  "Grouping touchpoints into journeys…",
+  "Crediting first-touch, linear & last-click…",
+  "Reconciling direct vs. assisted…",
+  "Ranking publishers by contribution…",
+];
+
 export function LoadingState() {
+  const [i, setI] = useState(0);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const t = setInterval(() => setI((n) => (n + 1) % LOADING_MESSAGES.length), 1100);
+    return () => clearInterval(t);
+  }, []);
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="glass-card rounded-xl h-[120px] animate-pulse" />
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+        <span className="relative flex h-2 w-2 shrink-0">
+          <span className="absolute inline-flex h-full w-full rounded-full bg-neon-cyan opacity-75 animate-ping" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-neon-cyan" />
+        </span>
+        <span key={i} className="animate-in fade-in slide-in-from-bottom-1 duration-300">
+          {LOADING_MESSAGES[i]}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+        {[0, 1, 2, 3].map((n) => (
+          <div key={n} className="glass-card rounded-xl h-[110px] animate-pulse" />
         ))}
       </div>
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-        <div className="glass-card rounded-xl h-[360px] xl:col-span-2 animate-pulse" />
-        <div className="glass-card rounded-xl h-[360px] xl:col-span-3 animate-pulse" />
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6">
+        <div className="glass-card rounded-xl h-[340px] xl:col-span-2 animate-pulse" />
+        <div className="glass-card rounded-xl h-[340px] xl:col-span-3 animate-pulse" />
       </div>
     </div>
   );

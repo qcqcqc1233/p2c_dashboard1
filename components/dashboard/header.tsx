@@ -9,7 +9,7 @@ export function Header() {
   const [region, setRegion] = useState("Global");
 
   return (
-    <header className="h-16 border-b border-border bg-background/60 backdrop-blur-xl sticky top-0 z-30 flex items-center justify-between px-6">
+    <header className="h-16 border-b border-border bg-background/60 backdrop-blur-xl sticky top-0 z-30 hidden lg:flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
         <h1 className="text-lg font-semibold text-foreground">
           CMO Dashboard

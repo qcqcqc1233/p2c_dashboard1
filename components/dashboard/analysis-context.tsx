@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { AnalyzeResponse } from "@/lib/analyze-types";
 
 interface AnalysisState {
@@ -34,6 +34,16 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState("");
   const [fileName, setFileName] = useState("");
   const [uploaderOpen, setUploaderOpen] = useState(false);
+
+  // A quiet hello for anyone who opens the console.
+  useEffect(() => {
+    console.log(
+      "%cMAD Growth%c  Omni-Channel Attribution Engine\n%cMulti-touch attribution: last-touch vs. assisted, reconciled across first-touch, linear & last-click.",
+      "color:#22d3ee;font-weight:700;font-size:13px",
+      "color:#a855f7;font-weight:600;font-size:13px",
+      "color:#7a7a85;font-size:11px",
+    );
+  }, []);
 
   const run = useCallback(async (file: File, filter: string) => {
     setLoading(true);

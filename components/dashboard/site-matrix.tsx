@@ -13,6 +13,7 @@ const stageStyles: Record<Stage, string> = {
 };
 
 const fmt = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+const ratioLabel = (r: SitePerformanceRow) => (r.assistToLastRatio === null ? "∞" : r.assistToLastRatio.toFixed(2));
 
 function Th({ children, right }: { children: ReactNode; right?: boolean }) {
   return (
@@ -34,24 +35,68 @@ export function SiteMatrix({
   const max = rows.reduce((m, r) => Math.max(m, r.totalContribution), 0) || 1;
 
   return (
-    <div className="glass-card rounded-xl p-6">
-      <div className="flex items-center gap-3 p-4 rounded-lg bg-neon-cyan/5 border border-neon-cyan/10 mb-6">
-        <Info className="w-5 h-5 text-neon-cyan shrink-0" />
-        <p className="text-sm text-muted-foreground">
+    <div className="glass-card rounded-xl p-4 sm:p-6">
+      <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-neon-cyan/5 border border-neon-cyan/10 mb-5 sm:mb-6">
+        <Info className="w-5 h-5 text-neon-cyan shrink-0 mt-0.5" />
+        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
           <span className="font-medium text-foreground">Methodology:</span> Direct and Assisted
-          conversions are non-mutually exclusive — a publisher can earn both within a single path,
+          conversions are non-mutually exclusive: a publisher can earn both within a single path,
           enabling full path-presence valuation.
         </p>
       </div>
 
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-foreground">Partner Performance Matrix</h3>
+        <h3 className="text-base sm:text-lg font-semibold text-foreground">Partner Performance Matrix</h3>
         <p className="text-sm text-muted-foreground mt-1">
           Publisher-level attribution · {rows.length} site{rows.length === 1 ? "" : "s"}
         </p>
       </div>
 
-      <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
+      {/* Mobile: card list (a table doesn't belong on a phone) */}
+      <div className="lg:hidden space-y-3">
+        {rows.map((r, i) => (
+          <div key={i} className="rounded-xl bg-white/[0.02] border border-white/[0.05] p-4">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: channelColor(r.channel) }} />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{r.site}</p>
+                  <p className="text-[11px] text-muted-foreground">{r.channel}</p>
+                </div>
+              </div>
+              <span className={cn("inline-flex px-2.5 py-1 rounded-full text-xs font-medium border shrink-0", stageStyles[r.stage])}>
+                {r.stage}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <Tile label="Last Touch" value={fmt(r.lastTouch)} />
+              <Tile label="Assisted" value={fmt(r.assisted)} />
+              <Tile label="Total" value={fmt(r.totalContribution)} />
+            </div>
+
+            <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden mb-3">
+              <div className="h-full rounded-full bg-gradient-to-r from-neon-purple to-neon-cyan" style={{ width: `${(r.totalContribution / max) * 100}%` }} />
+            </div>
+
+            <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+              <span>
+                Assist:LT{" "}
+                <span className={cn("font-mono", r.stage === "Introducer" ? "text-neon-purple" : "text-foreground")}>{ratioLabel(r)}</span>
+              </span>
+              {hasRevenue && (
+                <span>
+                  Rev <span className="text-neon-emerald font-medium tabular-nums">${fmt(r.revenue)}</span>
+                </span>
+              )}
+              {hasTiming && <span className="tabular-nums">{r.avgDaysToConvert}d avg</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: full table */}
+      <div className="hidden lg:block overflow-x-auto max-h-[520px] overflow-y-auto">
         <table className="w-full">
           <thead className="sticky top-0 bg-card/90 backdrop-blur z-10">
             <tr className="border-b border-white/[0.08]">
@@ -94,7 +139,7 @@ export function SiteMatrix({
                 </td>
                 <td className="py-3 px-4 text-right">
                   <span className={cn("text-sm font-mono", r.stage === "Introducer" ? "text-neon-purple" : "text-muted-foreground")}>
-                    {r.assistToLastRatio === null ? "∞" : r.assistToLastRatio.toFixed(2)}
+                    {ratioLabel(r)}
                   </span>
                 </td>
                 {hasRevenue && (
@@ -108,6 +153,15 @@ export function SiteMatrix({
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+function Tile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg bg-white/[0.02] border border-white/[0.04] px-2 py-2 text-center">
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</p>
+      <p className="text-sm font-semibold text-foreground tabular-nums mt-0.5">{value}</p>
     </div>
   );
 }

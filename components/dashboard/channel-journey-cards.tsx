@@ -8,13 +8,13 @@ export function ChannelJourneyCards({ stats, hasTiming }: { stats: ChannelStat[]
   const ordered = [...stats].sort((a, b) => b.lastTouch + b.assisted - (a.lastTouch + a.assisted));
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       {ordered.map((c) => {
         const Icon = channelIcon(c.channel);
         const color = channelColor(c.channel);
         return (
-          <div key={c.channel} className="glass-card glass-card-hover rounded-xl p-5">
-            <div className="flex items-center gap-3 mb-4">
+          <div key={c.channel} className="glass-card glass-card-hover rounded-xl p-4 sm:p-5">
+            <div className="flex items-center gap-3 mb-3 sm:mb-4">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${color}1a` }}>
                 <Icon className="w-5 h-5" style={{ color }} />
               </div>

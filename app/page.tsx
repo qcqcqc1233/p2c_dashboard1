@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Header } from "@/components/dashboard/header";
+import { MobileTopBar, MobileBottomNav } from "@/components/dashboard/mobile-nav";
+import { OrientationManager } from "@/components/dashboard/orientation-manager";
 import { AnalysisProvider } from "@/components/dashboard/analysis-context";
 import { UploadPanel } from "@/components/dashboard/upload-panel";
 import { AttributionSection } from "@/components/dashboard/sections/attribution";
@@ -34,22 +36,27 @@ export default function Dashboard() {
   return (
     <AnalysisProvider>
       <div className="flex min-h-screen bg-background">
+        {/* Desktop sidebar (hidden on phones) */}
         <Sidebar
           activeSection={activeSection}
           onSectionChange={setActiveSection}
           collapsed={sidebarCollapsed}
           onCollapsedChange={setSidebarCollapsed}
         />
+
+        {/* min-w-0 lets wide charts/tables shrink instead of forcing horizontal scroll */}
         <div
-          className={`flex-1 flex flex-col transition-all duration-300 ease-out ${
-            sidebarCollapsed ? "ml-[72px]" : "ml-[260px]"
+          className={`flex-1 min-w-0 flex flex-col transition-all duration-300 ease-out ${
+            sidebarCollapsed ? "lg:ml-[72px]" : "lg:ml-[260px]"
           }`}
         >
+          <MobileTopBar activeSection={activeSection} />
           <Header />
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="flex-1 p-4 lg:p-6 pb-24 lg:pb-6 overflow-auto">
+            <OrientationManager />
             {/* Persistent upload/source bar so a single report powers every tab. */}
             {activeSection !== "settings" && (
-              <div className="mb-6">
+              <div className="mb-4 lg:mb-6">
                 <UploadPanel />
               </div>
             )}
@@ -58,6 +65,9 @@ export default function Dashboard() {
             </div>
           </main>
         </div>
+
+        {/* Mobile bottom navigation (hidden on desktop) */}
+        <MobileBottomNav activeSection={activeSection} onSectionChange={setActiveSection} />
       </div>
     </AnalysisProvider>
   );

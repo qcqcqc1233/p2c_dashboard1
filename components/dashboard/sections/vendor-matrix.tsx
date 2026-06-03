@@ -31,7 +31,7 @@ export function VendorMatrixSection() {
       <AttributionModelChart
         rows={topPublishers}
         title="Conversions per Attribution Model by Publisher"
-        subtitle="Top publishers — how credit shifts from first-touch to last-click"
+        subtitle="Top publishers: how credit shifts from first-touch to last-click"
       />
       <SiteMatrix rows={data.sitePerformanceMatrix} hasRevenue={data.meta.hasRevenue} hasTiming={data.meta.hasTiming} />
     </div>

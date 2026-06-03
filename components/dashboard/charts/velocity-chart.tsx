@@ -5,16 +5,16 @@ import type { VelocityBucket } from "@/lib/analyze-types";
 
 export function VelocityChart({ data }: { data: VelocityBucket[] }) {
   return (
-    <div className="glass-card rounded-xl p-6">
+    <div className="glass-card rounded-xl p-4 sm:p-6">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-foreground">Conversion Velocity</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Time from first touch to conversion — how long demand takes to mature
+          How long demand takes to mature, from first touch to conversion
         </p>
       </div>
       <div className="h-[260px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 8, right: 12, bottom: 8, left: 0 }}>
+          <BarChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
             <defs>
               <linearGradient id="velGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.9} />
@@ -24,9 +24,13 @@ export function VelocityChart({ data }: { data: VelocityBucket[] }) {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
             <XAxis
               dataKey="label"
-              tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
               axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
               tickLine={false}
+              interval={0}
+              angle={-18}
+              textAnchor="end"
+              height={48}
             />
             <YAxis
               tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
