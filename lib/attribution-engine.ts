@@ -29,6 +29,18 @@ import type {
 const PRIMARY_CHANNELS: Channel[] = ["Search", "Video", "Display", "Social"];
 const MS_PER_DAY = 86_400_000;
 
+// Assumed media cost per conversion (eCPA) by channel. A CM360 Path-to-Conversion
+// export carries no spend, so ROAS is *modeled* from these rates until a real cost
+// feed is wired in. Tune to the advertiser's economics.
+const CHANNEL_ECPA: Record<string, number> = {
+  Search: 28,
+  Social: 42,
+  Display: 38,
+  Video: 55,
+  Other: 48,
+};
+const ecpaFor = (channel: string): number => CHANNEL_ECPA[channel] ?? 48;
+
 // ---------------------------------------------------------------------------
 // Small helpers
 // ---------------------------------------------------------------------------
@@ -307,6 +319,8 @@ interface SiteAcc {
   firstTouch: number;
   linear: number;
   revenue: number;
+  attribRevenue: number; // revenue split linearly across a path's touchpoints
+  partConv: number; // conversions this site participated in (for cost/ROAS)
   daysW: number; // sum(days * w) over participated, timed conversions
   timedW: number;
 }
@@ -347,7 +361,7 @@ function computeResponse(
   const ensureSite = (site: string, channel: Channel): SiteAcc => {
     let s = siteStats.get(site);
     if (!s) {
-      s = { channel, lastTouch: 0, assisted: 0, firstTouch: 0, linear: 0, revenue: 0, daysW: 0, timedW: 0 };
+      s = { channel, lastTouch: 0, assisted: 0, firstTouch: 0, linear: 0, revenue: 0, attribRevenue: 0, partConv: 0, daysW: 0, timedW: 0 };
       siteStats.set(site, s);
     }
     return s;
@@ -392,11 +406,16 @@ function computeResponse(
     ensureSite(first.site, first.channel).firstTouch += w;
     for (const t of p.touches) ensureSite(t.site, t.channel).linear += w / n;
 
-    // Per-site participation timing (unique sites in the path).
+    // Per-site participation: revenue (split linearly across touchpoints, so
+    // introducers share value too), conversion count for cost, and timing.
     const uniqueSites = new Set(p.touches.map((t) => t.site));
+    const revShare = uniqueSites.size > 0 ? p.revenue / uniqueSites.size : 0;
     for (const site of uniqueSites) {
       const s = siteStats.get(site);
-      if (s && timed) {
+      if (!s) continue;
+      s.partConv += w;
+      s.attribRevenue += revShare;
+      if (timed) {
         s.daysW += p.daysToConvert * w;
         s.timedW += w;
       }
@@ -479,20 +498,24 @@ function computeResponse(
   // ---- Top paths (+ badges) ----
   const rawTop = [...pathGroups.values()].sort((a, b) => b.conversions - a.conversions).slice(0, 12);
   const maxConv = rawTop.reduce((m, g) => Math.max(m, g.conversions), 0);
-  const rpcList = rawTop
-    .filter((g) => g.conversions > 0 && g.revenue > 0)
-    .map((g) => g.revenue / g.conversions)
-    .sort((a, b) => a - b);
-  const rpcP70 = rpcList.length ? rpcList[Math.floor(0.7 * (rpcList.length - 1))] : Infinity;
+  // Path ROAS = revenue / (conversions x blended eCPA across the path's channels).
+  const pathRoas = (g: PathAcc): number => {
+    if (g.revenue <= 0 || g.conversions <= 0) return 0;
+    const uniq = [...new Set(g.path)];
+    const blended = uniq.reduce((s, ch) => s + ecpaFor(ch), 0) / uniq.length;
+    return blended > 0 ? g.revenue / (g.conversions * blended) : 0;
+  };
+  const roasList = rawTop.map(pathRoas).filter((x) => x > 0).sort((a, b) => a - b);
+  const roasP70 = roasList.length ? roasList[Math.floor(0.7 * (roasList.length - 1))] : Infinity;
   const timedTop = rawTop.filter((g) => g.timedW > 0).map((g) => g.daysW / g.timedW);
   const fastThreshold = timedTop.length ? Math.min(...timedTop) * 1.5 : 0;
 
   const topPaths: TopPath[] = rawTop.map((g) => {
     const avgDays = g.timedW > 0 ? g.daysW / g.timedW : 0;
-    const rpc = g.conversions > 0 ? g.revenue / g.conversions : 0;
+    const roas = pathRoas(g);
     const badges: string[] = [];
     if (g.conversions === maxConv && maxConv > 0) badges.push("Top Volume");
-    if (meta.hasRevenue && rpc >= rpcP70 && rpc > 0) badges.push("Highly Profitable");
+    if (meta.hasRevenue && roas > 0 && roas >= roasP70) badges.push("Highly Profitable");
     if (meta.hasTiming && g.timedW > 0 && avgDays <= fastThreshold) badges.push("Fastest Velocity");
     if (g.path.length >= 3 && (g.path[0] === "Video" || g.path[0] === "Display")) badges.push("Upper-Funnel Play");
     return {
@@ -501,6 +524,7 @@ function computeResponse(
       percentageOfTotal: totalConversions > 0 ? round2((g.conversions / totalConversions) * 100) : 0,
       avgDaysToConvert: round2(avgDays),
       revenue: round2(g.revenue),
+      roas: round2(roas),
       badges: badges.slice(0, 2),
     };
   });
@@ -517,6 +541,10 @@ function computeResponse(
       totalContribution: round2(s.lastTouch + s.assisted),
       assistToLastRatio: s.lastTouch > 0 ? round2(s.assisted / s.lastTouch) : null,
       revenue: round2(s.revenue),
+      roas:
+        s.partConv > 0 && s.attribRevenue > 0
+          ? round2(s.attribRevenue / (s.partConv * ecpaFor(s.channel)))
+          : 0,
       avgDaysToConvert: s.timedW > 0 ? round2(s.daysW / s.timedW) : 0,
       stage: stageFromRatio(s.lastTouch, s.assisted),
     }))

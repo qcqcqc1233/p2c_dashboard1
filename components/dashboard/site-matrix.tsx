@@ -42,6 +42,7 @@ export function SiteMatrix({
           <span className="font-medium text-foreground">Methodology:</span> Direct and Assisted
           conversions are non-mutually exclusive: a publisher can earn both within a single path,
           enabling full path-presence valuation.
+          {hasRevenue && " ROAS is modeled from an assumed per-channel eCPA, since a Path to Conversion export carries no media cost."}
         </p>
       </div>
 
@@ -86,7 +87,7 @@ export function SiteMatrix({
               </span>
               {hasRevenue && (
                 <span>
-                  Rev <span className="text-neon-emerald font-medium tabular-nums">${fmt(r.revenue)}</span>
+                  ROAS <span className="text-neon-emerald font-medium tabular-nums">{r.roas}x</span>
                 </span>
               )}
               {hasTiming && <span className="tabular-nums">{r.avgDaysToConvert}d avg</span>}
@@ -106,7 +107,7 @@ export function SiteMatrix({
               <Th right>Assisted</Th>
               <Th>Total Contribution</Th>
               <Th right>Assist:LT</Th>
-              {hasRevenue && <Th right>Revenue</Th>}
+              {hasRevenue && <Th right>ROAS</Th>}
               {hasTiming && <Th right>Avg Days</Th>}
             </tr>
           </thead>
@@ -143,7 +144,7 @@ export function SiteMatrix({
                   </span>
                 </td>
                 {hasRevenue && (
-                  <td className="py-3 px-4 text-right"><span className="text-sm font-medium text-neon-emerald tabular-nums">${fmt(r.revenue)}</span></td>
+                  <td className="py-3 px-4 text-right"><span className="text-sm font-medium text-neon-emerald tabular-nums">{r.roas}x</span></td>
                 )}
                 {hasTiming && (
                   <td className="py-3 px-4 text-right"><span className="text-sm text-muted-foreground tabular-nums">{r.avgDaysToConvert}</span></td>

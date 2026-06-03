@@ -37,6 +37,8 @@ export interface TopPath {
   percentageOfTotal: number;
   avgDaysToConvert: number;
   revenue: number;
+  /** Return on ad spend = revenue / modeled media cost (assumed per-channel eCPA). */
+  roas: number;
   /** Value tags e.g. "Highly Profitable", "Fastest Velocity". */
   badges: string[];
 }
@@ -53,6 +55,8 @@ export interface SitePerformanceRow {
   /** assisted / lastTouch; null = pure introducer (no last-touch credit). */
   assistToLastRatio: number | null;
   revenue: number;
+  /** Return on ad spend = attributed revenue / modeled media cost. */
+  roas: number;
   avgDaysToConvert: number;
   stage: Stage;
 }
